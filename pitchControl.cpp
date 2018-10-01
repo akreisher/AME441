@@ -2,7 +2,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
-#include "AHRS.h"
+#include "navX/AHRS.h"
 #include <chrono>
 #include <thread>
 #include <iomanip>
@@ -12,7 +12,7 @@
 #include <utility>
 #include <mutex>
 #include <atomic>
-#include "motorClass.h"
+#include "motor/motorClass.h"
 
 volatile sig_atomic_t sflag = 0;
 std::mutex sigmtx; //signal mutex
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     sigmtx.lock();//lock mtx signal
     signal(SIGINT, handle_sig);//set SIGINT signal handler
 
-    StepperMotor stepper(20,21,1.8);//stepper (dir,step,step angle)
+    StepperMotor stepper(20,21,0.9);//stepper (dir,step,step angle)
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     std::thread IMUthread(readIMUData,100);
@@ -88,9 +88,9 @@ int main(int argc, char *argv[]) {
 
 			//into rad/s
 			//check if this is right (imu in s)
-			float speed = deltaTheta/deltat;
-			if (deltaTheta>0) stepper.rotateToPos(newPitch,speed,CCW);
-			else stepper.rotateToPos(newPitch,-speed,CW);
+			
+			if (deltaTheta>0) stepper.rotateToPos(newPitch,deltat,CCW);
+			else stepper.rotateToPos(newPitch,deltat,CW);
 		}
     }
     printf("\nExit Caught... Closing device.\n");

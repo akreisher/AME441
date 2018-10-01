@@ -2,7 +2,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
-#include "AHRS.h"
+#include "navX/AHRS.h"
 #include <chrono>
 #include <thread>
 #include <iomanip>
@@ -12,7 +12,7 @@
 #include <utility>
 #include <mutex>
 #include <atomic>
-#include "motorSim.h"
+#include "motor/motorSim.h"
 
 volatile sig_atomic_t sflag = 0;
 std::mutex sigmtx; //signal mutex
@@ -34,7 +34,7 @@ void handle_sig(int sig)
 //IMU thread code, reads in data 
 void readIMUData(int period)
 {
-	AHRS com = AHRS("/dev/ttyACM2");
+	AHRS com = AHRS("/dev/ttyACM0");
 	printf("Initializing\n\n");
 	while (true){
     	//check for mtx signal
