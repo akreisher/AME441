@@ -1,39 +1,41 @@
 CXX = g++
 CPPFLAGS = -Wall -g -std=c++11 -pthread
 BIN_DIR = bin
+AHRS_DIR = navX
 
-all: yawControl
+$(BIN_DIR)/.dirstamp:
+    mkdir -p $(BIN_DIR)
+    touch $(BIN_DIR)/.dirstamp
+$(AHRS_DIR)/.dirstamp:
+    mkdir -p $(AHRS_DIR)
+    touch $(AHRS_DIR)/.dirstamp
 
-yawControl: yawControl.cpp AHRS.o SerialPort.o SerialIO.o OffsetTracker.o InertialDataIntegrator.o ContinuousAngleTracker.o motorClass.o
+
+$(BIN_DIR)/yawControl: yawControl.cpp $(BIN_DIR)/AHRS.o $(BIN_DIR)/SerialPort.o $(BIN_DIR)/SerialIO.o $(BIN_DIR)/OffsetTracker.o $(BIN_DIR)/InertialDataIntegrator.o $(BIN_DIR)/ContinuousAngleTracker.o $(BIN_DIR)/motorClass.o
 	${CXX} ${CPPFLAGS} $^ -o $@ -lwiringPi
 	
-pitchControl: pitchControl.cpp AHRS.o SerialPort.o SerialIO.o OffsetTracker.o InertialDataIntegrator.o ContinuousAngleTracker.o motorClass.o
+$(BIN_DIR)/pitchControl: pitchControl.cpp $(BIN_DIR)/AHRS.o $(BIN_DIR)/SerialPort.o $(BIN_DIR)/SerialIO.o $(BIN_DIR)/OffsetTracker.o $(BIN_DIR)/InertialDataIntegrator.o $(BIN_DIR)/ContinuousAngleTracker.o $(BIN_DIR)/motorClass.o
 	${CXX} ${CPPFLAGS} $^ -o $@ -lwiringPi
 
-yawSim: yawSimTest.cpp AHRS.o SerialPort.o SerialIO.o OffsetTracker.o InertialDataIntegrator.o ContinuousAngleTracker.o motorSim.o
-	${CXX} ${CPPFLAGS} $^ -o $@ -lwiringPi
-
-pitchSim: pitchSim.cpp AHRS.o SerialPort.o SerialIO.o OffsetTracker.o InertialDataIntegrator.o ContinuousAngleTracker.o motorSim.o
-	${CXX} ${CPPFLAGS} $^ -o $@ -lwiringPi
-SerialPort.o: SerialPort.cpp
+$(BIN_DIR)/SerialPort.o: $(AHRS_DIR)/SerialPort.cpp
 	${CXX} ${CPPFLAGS} -c $< -o $@
 	
-motorClass.o: motorClass.cpp motorClass.h
+$(BIN_DIR)/motorClass.o: motorClass.cpp motorClass.h
 	${CXX} ${CPPFLAGS} -c $< -o $@
 	
-motorSim.o: motorSim.cpp motorSim.h
+$(BIN_DIR)/motorSim.o: motorSim.cpp motorSim.h
 	${CXX} ${CPPFLAGS} -c $< -o $@
 	
-SerialIO.o: SerialIO.cpp SerialIO.h AHRSProtocol.h IMUProtocol.h IIOCompleteNotification.h IBoardCapabilities.h
+$(BIN_DIR)/SerialIO.o: $(AHRS_DIR)/SerialIO.cpp $(AHRS_DIR)/SerialIO.h $(AHRS_DIR)/AHRSProtocol.h $(AHRS_DIR)/IMUProtocol.h $(AHRS_DIR)/IIOCompleteNotification.h $(AHRS_DIR)/IBoardCapabilities.h
 	${CXX} ${CPPFLAGS} -c $< -o $@
 
-OffsetTracker.o: OffsetTracker.cpp OffsetTracker.h
+$(BIN_DIR)/OffsetTracker.o: $(AHRS_DIR)/OffsetTracker.cpp $(AHRS_DIR)/OffsetTracker.h
 	${CXX} ${CPPFLAGS} -c $< -o $@
-InertialDataIntegrator.o: InertialDataIntegrator.cpp InertialDataIntegrator.h
-	${CXX} ${CPPFLAGS} -c $< -o $@
-
-ContinuousAngleTracker.o: ContinuousAngleTracker.cpp ContinuousAngleTracker.h
+$(BIN_DIR)/InertialDataIntegrator.o: $(AHRS_DIR)/InertialDataIntegrator.cpp $(AHRS_DIR)/InertialDataIntegrator.h
 	${CXX} ${CPPFLAGS} -c $< -o $@
 
-AHRS.o: AHRS.cpp AHRS.h AHRSProtocol.h IIOProvider.h IIOCompleteNotification.h IBoardCapabilities.h InertialDataIntegrator.h OffsetTracker.h ContinuousAngleTracker.h SerialIO.h
+$(BIN_DIR)/ContinuousAngleTracker.o: $(AHRS_DIR)/ContinuousAngleTracker.cpp $(AHRS_DIR)/ContinuousAngleTracker.h
+	${CXX} ${CPPFLAGS} -c $< -o $@
+
+$(BIN_DIR)/AHRS.o: AHRS.cpp $(AHRS_DIR)/AHRS.h $(AHRS_DIR)/AHRSProtocol.h $(AHRS_DIR)/IIOProvider.h $(AHRS_DIR)/IIOCompleteNotification.h $(AHRS_DIR)/IBoardCapabilities.h $(AHRS_DIR)/InertialDataIntegrator.h $(AHRS_DIR)/OffsetTracker.h $(AHRS_DIR)/ContinuousAngleTracker.h $(AHRS_DIR)/SerialIO.h
 	${CXX} ${CPPFLAGS} -c $< -o $@
