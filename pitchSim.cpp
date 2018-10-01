@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,13 +12,14 @@
 #include <utility>
 #include <mutex>
 #include <atomic>
-#include "motorClass.h"
+#include "motorSim.h"
 
 volatile sig_atomic_t sflag = 0;
 std::mutex sigmtx; //signal mutex
 //queue of yaw data, race-condition safe
 
-std::queue<std::pair<float,long>> yawData;
+std::queue<float> pitchData;
+std::queue<long> timeData;
 
 //directions
 const bool CW = 1;
@@ -32,7 +34,7 @@ void handle_sig(int sig)
 //IMU thread code, reads in data 
 void readIMUData(int period)
 {
-	AHRS com = AHRS("/dev/ttyACM0");
+	AHRS com = AHRS("/dev/ttyACM2");
 	printf("Initializing\n\n");
 	while (true){
     	//check for mtx signal
@@ -43,7 +45,8 @@ void readIMUData(int period)
             break;
         }
 
-        yawData.push(std::pair<float,long>(com.GetYaw(),com.GetLastSensorTimestamp()));
+        pitchData.push(com.GetPitch());
+        timeData.push(com.GetLastSensorTimestamp());
 
         std::this_thread::sleep_for(std::chrono::milliseconds(period));
 	}
@@ -55,7 +58,7 @@ int main(int argc, char *argv[]) {
     sigmtx.lock();//lock mtx signal
     signal(SIGINT, handle_sig);//set SIGINT signal handler
 
-    StepperMotor stepper(20,21,1.8);//stepper (dir,step,step angle)
+    MotorSim stepper(1.8);//stepper (dir,step,step angle)
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     std::thread IMUthread(readIMUData,100);
@@ -69,22 +72,26 @@ int main(int argc, char *argv[]) {
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             break;
         }
+		
+		if (pitchData.size()>2){
+			//get yaw data
+			float prevPitch = pitchData.front();
+			pitchData.pop();
+			float newPitch = pitchData.front();
+			long prevTime = timeData.front();
+			timeData.pop();
+			long newTime = timeData.front();
 
-        //get yaw data
-        std::pair<float,long> yawPair1 = yawData.front();
-        yawData.pop();
-        std::pair<float,long> yawPair2 = yawData.front();
-        yawData.pop();
+			//claculate angular disp. and speed
+			float deltaTheta = newPitch-prevPitch;
+			long deltat=(newTime-prevTime)/1000;
 
-        //claculate angular disp. and speed
-        float deltaTheta = yawPair2.first-yawPair1.first;
-        long deltat=(yawPair2.second-yawPair1.second)/1000;
-
-        //into rad/s
-        //check if this is right (imu in s)
-        float speed = deltaTheta/deltat;
-        if (deltaTheta>0) stepper.rotate(deltaTheta,speed,CCW);
-        else stepper.rotate(-deltaTheta,-speed,CW);
+			//into rad/s
+			//check if this is right (imu in s)
+			float speed = deltaTheta/deltat;
+			if (deltaTheta>0) stepper.rotateToPos(newPitch,speed,CCW);
+			else stepper.rotateToPos(newPitch,-speed,CW);
+		}
     }
     printf("\nExit Caught... Closing device.\n");
 }

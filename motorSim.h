@@ -1,10 +1,10 @@
 #include <wiringPi.h>
-//Stepper class for RPI. Compile with -lwiringPi flag
-class StepperMotor 
+//Stepper simulator for RPI. Outputs to terminal
+class MotorSim
 {
 	public:
-		//constructor, takes pins and step size, sets zero pos to curr pos
-		StepperMotor(int dirPin, int stepPin, float stepAngle);
+		//constructor,takes step size, sets zero pos to curr pos
+		MotorSim( float stepAngle);
 		//perform one step
 		void step(int dt, bool dir);
 		//rotate a certain number of degrees
@@ -16,8 +16,6 @@ class StepperMotor
 		//get current position
 		float getCurrPos();
 	private:
-		int dirPin;
-		int stepPin;
 		float stepAngle;
 		float currPos;
 		const bool CW = 1;

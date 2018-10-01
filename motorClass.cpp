@@ -1,12 +1,13 @@
 #include <iostream>
+#include "motorClass.h"
 
 StepperMotor::StepperMotor(int dirPin, int stepPin, float stepAngle)
 {
 	wiringPiSetupGpio();
-	this.dirPin = dirPin;
-	this.stepPin = stepPin;
-	this.stepAngle = stepAngle;
-	this.currPos = 0;
+	this->dirPin = dirPin;
+	this->stepPin = stepPin;
+	this->stepAngle = stepAngle;
+	this->currPos = 0;
 	pinMode(dirPin, OUTPUT);
     pinMode(stepPin, OUTPUT);
 }
