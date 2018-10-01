@@ -35,6 +35,14 @@ void StepperMotor::rotateToPos(float newPos, float speed,bool dir)
 	rotate(angle,speed,dir);
 }
 
+void StepperMotor::step(int dt, bool dir)
+{
+	digitalWrite(dirPin,dir);
+	digitalWrite(stepPin,HIGH);
+	delay(dt/2);
+	digitalWrite(stepPin,LOW);
+	delay(dt/2);
+}
 void StepperMotor::setZero()
 {
 	currPos=0;
