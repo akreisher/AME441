@@ -10,11 +10,28 @@ StepperMotor::StepperMotor(int dirPin, int stepPin, float stepAngle)
 	this->currPos = 0;
 	pinMode(dirPin, OUTPUT);
     pinMode(stepPin, OUTPUT);
+    limSet= false;
 }
 
 void StepperMotor::rotate(float angle, float time,bool dir)
 {
-	
+	if (limSet){
+		float targetPos = currPos;
+		if (dir==CCW) targetPos += angle;
+		else targetPos -= angle;
+		if (targetPos>maxLim)
+		{
+			float newAngle = maxLim-currPos;
+			rotate(newAngle, time, dir);
+			return;
+		}
+		if (targetPos<minLim)
+		{
+			float newAngle = currPos-minLim;
+			rotate(newAngle, time, dir);;
+			return;
+		}
+	}
 	int numSteps = angle/stepAngle;
 	float dt = time;
 	std::cout<<numSteps<<std::endl;
@@ -55,3 +72,16 @@ float StepperMotor::getCurrPos()
 {
 	return currPos;
 }
+
+void StepperMotor::setLimits(float minLim, float maxLim)
+{
+	this->minLim=minLim;
+	this->maxLim = maxLim;
+	limSet=true;
+}
+
+void StepperMotor::resetLimits()
+{
+	limSet=false;
+}
+	

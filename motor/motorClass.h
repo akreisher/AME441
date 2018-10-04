@@ -15,7 +15,14 @@ class StepperMotor
 		void setZero();
 		//get current position
 		float getCurrPos();
+		//set motor limits
+		void setLimits(float minLim,float maxLim);
+		//turn off limits
+		void resetLimits();
 	private:
+		float minLim;
+		float maxLim;
+		bool limSet;
 		int dirPin;
 		int stepPin;
 		float stepAngle;
