@@ -1,2 +1,0 @@
-#include "motorClass.h"
-
