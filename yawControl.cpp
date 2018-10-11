@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
-#include "AHRS.h"
+#include "navX/AHRS.h"
 #include <chrono>
 #include <thread>
 #include <iomanip>
@@ -11,7 +11,7 @@
 #include <utility>
 #include <mutex>
 #include <atomic>
-#include "motorClass.h"
+#include "motor/motorClass.h"
 
 volatile sig_atomic_t sflag = 0;
 std::mutex sigmtx; //signal mutex

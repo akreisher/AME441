@@ -48,6 +48,18 @@ void StepperMotor::rotate(float angle, float time,bool dir)
 
 void StepperMotor::rotateToPos(float newPos, float time,bool dir)
 {
+	if (limSet){
+		if (newPos>maxLim)
+		{
+			rotateToPos(maxLim, time, CCW);
+			return;
+		}
+		if (newPos<minLim)
+		{
+			rotate(minLim, time, CW);
+			return;
+		}
+	}
 	float angle;
 	if (dir==CW) angle = currPos-newPos;
 	else angle = newPos-currPos;

@@ -45,7 +45,7 @@ void readIMUData(int period)
             break;
         }
 
-        pitchData.push(com.GetPitch());
+        pitchData.push(com.GetYaw());
         timeData.push(com.GetLastSensorTimestamp());
 
         std::this_thread::sleep_for(std::chrono::milliseconds(period));
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
     StepperMotor stepper(20,21,0.9);//stepper (dir,step,step angle)
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    std::thread IMUthread(readIMUData,100);
+    std::thread IMUthread(readIMUData,1000);
 
     while(true){
     	//get SIGIN signal

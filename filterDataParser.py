@@ -20,7 +20,7 @@ for i,line in enumerate(f):
 	a[i,:]=l[1:11];
 	
 #plot data
-for i in range(10)
+for i in range(10):
 	plt.plot(t,a[:,i]);
 plt.legend(range(0.2,2.2,0.2));
 plt.show();
