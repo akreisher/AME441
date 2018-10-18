@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -17,8 +16,7 @@
 
 volatile sig_atomic_t sflag = 0;
 std::mutex sigmtx; //signal mutex
-//queue of yaw data, race-condition safe
-
+//queue of yaw data
 std::queue<float> yawData;
 std::queue<long> timeData;
 
@@ -97,8 +95,10 @@ int main(int argc, char *argv[]) {
 
 		}
     }
+    ofile.close()
     system("python plotData.py");
     printf("\nExit Caught... Closing device.\n");
+
 
 }
 
