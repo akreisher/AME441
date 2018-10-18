@@ -2,16 +2,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 #Open data file
 count = 0
-with open("testfile.txt","r") as f:
+with open("testdata.txt","r") as f:
 	#Get number of data entries
 	for line in f:
 		count=count+1
 
-#set up empty arrays
+#Set up empty arrays
 t=np.empty([count,1])
 yaw=np.empty([count,1])
 pos=np.empty([count,1])
-with open("testfile.txt","r") as f:
+with open("testdata.txt","r") as f:
 	#Parse data from file
 	for i,line in enumerate(f):
 		data=line.split(",")
@@ -20,11 +20,13 @@ with open("testfile.txt","r") as f:
 		pos[i]=data[2]
 
 #Plot data
-plt.plot(t,yaw,'b')
-plt.plot(t,pos,'r')
-plt.legend("IMU Yaw", "Motor Position")
+t=(t-t[0])/1000
+plt.plot(t,yaw,'b',label="IMU Yaw")
+plt.plot(t,pos,'r',label="Motor Position")
+#plt.legend("IMU Yaw", "Motor Position")
 plt.xlabel("Time [s]")
 plt.ylabel("Angle [deg]")
-plt.box(false)
+plt.legend()
+plt.box(False)
 plt.show()
 
