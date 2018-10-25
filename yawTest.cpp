@@ -19,6 +19,7 @@ std::mutex sigmtx; //signal mutex
 //queue of yaw data
 std::queue<float> yawData;
 std::queue<long> timeData;
+float initYaw = -1000;
 
 
 //directions
@@ -34,7 +35,7 @@ void handle_sig(int sig)
 //IMU thread code, reads in data 
 void readIMUData(int period)
 {
-	AHRS com = AHRS("/dev/ttyACM0");
+	AHRS com = AHRS("/dev/ttyACM3");
 	printf("Initializing\n\n");
 	while (true){
     	//check for mtx signal
@@ -44,8 +45,13 @@ void readIMUData(int period)
             sigmtx.unlock();//unlock mtx
             break;
         }
-
-        pitchData.push(com.GetYaw());
+        float yaw = com.GetYaw();
+		if (initYaw==-1000)
+		{
+			initYaw=yaw;
+			std::cout<<"Initaw "<<initYaw<<std::endl;
+		}
+        yawData.push(yaw-initYaw);
         timeData.push(com.GetLastSensorTimestamp());
 
         std::this_thread::sleep_for(std::chrono::milliseconds(period));
@@ -58,11 +64,11 @@ int main(int argc, char *argv[]) {
     sigmtx.lock();//lock mtx signal
     signal(SIGINT, handle_sig);//set SIGINT signal handler
     std::ofstream ofile;
-    ofile.open("testdata.txt");
+    ofile.open("testdata1.txt");
     StepperMotor stepper(20,21,0.9);//stepper (dir,step,step angle)
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    std::thread IMUthread(readIMUData,1000);
+    std::thread IMUthread(readIMUData,100);
 
     while(true){
     	//get SIGINT signal
@@ -77,7 +83,7 @@ int main(int argc, char *argv[]) {
 		if (yawData.size()>2){
 			//get yaw data
 			float prevYaw = yawData.front();
-			pitchData.pop();
+			yawData.pop();
 			float newYaw = yawData.front();
 			long prevTime = timeData.front();
 			timeData.pop();
@@ -87,15 +93,15 @@ int main(int argc, char *argv[]) {
 			float deltaTheta = newYaw-prevYaw;
 			long deltat=(newTime-prevTime)/1000;
 
-			if (deltaTheta>0) stepper.rotateToPos(newYaw,deltat,CCW);
-			else stepper.rotateToPos(newYaw,deltat,CW);
+			if (deltaTheta>0) stepper.rotateToPos(newYaw,5,CCW);
+			else stepper.rotateToPos(newYaw,5,CW);
             float motorPos = stepper.getCurrPos();
-            std::cout << std::fixed << std::setprecision(2) << "Yaw: " << newYaw << "Motor pos: " << motorPos << "\r"<<std::flush;
-            ofile<<newTime/1000<<","<<newYaw<<","<<motorPos<<std::endl;
+            std::cout <<"Yaw: " << newYaw << "Motor pos: " << motorPos<<std::endl;
+            ofile<<newTime<<","<<newYaw<<","<<motorPos<<std::endl;
 
 		}
     }
-    ofile.close()
+    ofile.close();
     system("python plotData.py");
     printf("\nExit Caught... Closing device.\n");
 
