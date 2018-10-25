@@ -3,6 +3,17 @@
 #include <sstream>
 #include <iostream>
 #include <thread>
+/*
+ * First parameter is motor number (12 for both)
+ Commands:
+ * setZero: sets corr pos to zero
+ * setLim lim1 lim2: sets lower and upper limits, respectively
+ * rotate(or r) angle delay dir: rotate a given angle wit a given delay towards dir
+ * rotateTo(or rt) pos delay dir: rotate to given pos with delay in direction dir
+ * 
+ * Directions: CW=1, CCW=0
+ * ex: 1 r 30 1 0 (rotate mot 1 30 deg ccw with delay of 1 millisecond)
+*/
 
 void sendRotCommand(StepperMotor* mot, std::string com, float angle, long delay, bool dir){
 	if (com=="rotate" || com=="r"){
@@ -16,7 +27,7 @@ void sendRotCommand(StepperMotor* mot, std::string com, float angle, long delay,
 int main(){
 	//dir,step,angle
 	StepperMotor mot1(20,21,0.9);
-	StepperMotor mot2(23,24,0.9);
+	StepperMotor mot2(23,24,1.8);
 	while (true){
 		std::cout<<"Motor 1 Position: "<<mot1.getCurrPos()<<std::endl;
 		std::cout<<"Motor 2 Position: "<<mot2.getCurrPos()<<std::endl;
@@ -51,7 +62,7 @@ int main(){
 				mot2Thread.join();
 			}
 			else if (motNum==12){
-				if (!(stream.str().empty())){
+					std::cout<<"Aww"<<std::endl;
 					std::string com2;
 					float angle2;
 				 	bool dir2;
@@ -61,13 +72,6 @@ int main(){
 					std::thread mot2Thread(sendRotCommand,&mot2,com2,angle2,delay2,dir2);
 					mot1Thread.join();
 					mot2Thread.join();
-				}
-				else{
-					std::thread mot1Thread(sendRotCommand,&mot1,com,angle,delay,dir);
-					std::thread mot2Thread(sendRotCommand,&mot2,com,angle,delay,dir);
-					mot1Thread.join();
-					mot2Thread.join();
-				}
 			}
 		}
 	}
