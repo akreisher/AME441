@@ -15,8 +15,14 @@ $(BIN_DIR)/filterTest: filterTest.cpp $(BIN_DIR)/AHRS.o $(BIN_DIR)/SerialPort.o 
 	
 $(BIN_DIR)/timestamp: TimeStamp.cpp $(BIN_DIR)/AHRS.o $(BIN_DIR)/SerialPort.o $(BIN_DIR)/SerialIO.o $(BIN_DIR)/OffsetTracker.o $(BIN_DIR)/InertialDataIntegrator.o $(BIN_DIR)/ContinuousAngleTracker.o 
 	${CXX} ${CPPFLAGS} $^ -o $@ 
+
+$(BIN_DIR)/imuRecord: imuRecord.cpp $(BIN_DIR)/AHRS.o $(BIN_DIR)/SerialPort.o $(BIN_DIR)/SerialIO.o $(BIN_DIR)/OffsetTracker.o $(BIN_DIR)/InertialDataIntegrator.o $(BIN_DIR)/ContinuousAngleTracker.o 
+	${CXX} ${CPPFLAGS} $^ -o $@ 
 	
 $(BIN_DIR)/yawTest: yawTest.cpp $(BIN_DIR)/AHRS.o $(BIN_DIR)/SerialPort.o $(BIN_DIR)/SerialIO.o $(BIN_DIR)/OffsetTracker.o $(BIN_DIR)/InertialDataIntegrator.o $(BIN_DIR)/ContinuousAngleTracker.o $(BIN_DIR)/motorClass.o
+	${CXX} ${CPPFLAGS} $^ -o $@ -lwiringPi
+	
+$(BIN_DIR)/imuMotorTest: imuMotorTest.cpp $(BIN_DIR)/AHRS.o $(BIN_DIR)/SerialPort.o $(BIN_DIR)/SerialIO.o $(BIN_DIR)/OffsetTracker.o $(BIN_DIR)/InertialDataIntegrator.o $(BIN_DIR)/ContinuousAngleTracker.o $(BIN_DIR)/motorClass.o
 	${CXX} ${CPPFLAGS} $^ -o $@ -lwiringPi
 
 $(BIN_DIR)/yawControl: yawControl.cpp $(BIN_DIR)/AHRS.o $(BIN_DIR)/SerialPort.o $(BIN_DIR)/SerialIO.o $(BIN_DIR)/OffsetTracker.o $(BIN_DIR)/InertialDataIntegrator.o $(BIN_DIR)/ContinuousAngleTracker.o $(BIN_DIR)/motorClass.o

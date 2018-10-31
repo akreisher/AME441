@@ -4,8 +4,8 @@
 #include <iostream>
 #include <thread>
 /*
- * First parameter is motor number (12 for both)
- Commands:
+ * First parameter is motor number (12 for both, use 2 rotation commands)
+ * Commands:
  * setZero: sets corr pos to zero
  * setLim lim1 lim2: sets lower and upper limits, respectively
  * rotate(or r) angle delay dir: rotate a given angle wit a given delay towards dir
