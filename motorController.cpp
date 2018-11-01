@@ -1,13 +1,24 @@
 #include "motor/motorClass.h"
 #include <wiringPi.h>
 #include <iostream>
+#include <stdlib.h>
 
 int main(int argc, char* argv [])
 {
-	int dirPin = 20;
-	int stepPin = 21;
+	int dirPin, stepPin;
+	float angle;
+	if (argc>1){
+		dirPin = atoi(argv[1]);
+		stepPin= atoi(argv[2]);
+		angle = atof(argv[3]);
+	}
+	else{
+		dirPin = 20;
+		stepPin = 21;
+		angle = 0.9;
+	}
 	//dirPin=20, stepPin=21
-	StepperMotor step(dirPin,stepPin,0.9);
+	StepperMotor step(dirPin,stepPin,angle);
 
 	while (true){
 		float deg;

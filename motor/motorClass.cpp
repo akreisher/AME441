@@ -34,7 +34,6 @@ void StepperMotor::rotate(float angle, float time,bool dir)
 	}
 	int numSteps = angle/stepAngle;
 	float dt = time;
-	std::cout<<numSteps<<std::endl;
 	digitalWrite(dirPin,dir);
 	for (int i = 0;i<numSteps;i++){
 		digitalWrite(stepPin,HIGH);
