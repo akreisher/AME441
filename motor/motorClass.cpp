@@ -66,13 +66,15 @@ void StepperMotor::rotateToPos(float newPos, float time,bool dir)
 	rotate(angle,time,dir);
 }
 
-void StepperMotor::step(int dt, bool dir)
+void StepperMotor::step(int time, bool dir)
 {
 	digitalWrite(dirPin,dir);
 	digitalWrite(stepPin,HIGH);
-	delay(dt/2);
+	delay(time);
 	digitalWrite(stepPin,LOW);
-	delay(dt/2);
+	delay(time);
+	if (dir==CW) currPos-=stepAngle;
+	else currPos+=stepAngle;
 }
 void StepperMotor::setZero()
 {

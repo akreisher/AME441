@@ -6,7 +6,7 @@ class StepperMotor
 		//constructor, takes pins and step size, sets zero pos to curr pos
 		StepperMotor(int dirPin, int stepPin, float stepAngle);
 		//perform one step
-		void step(int dt, bool dir);
+		void step(int time, bool dir);
 		//rotate a certain number of degrees
 		void rotate(float angle, float time,bool dir);
 		//rotate to new set position

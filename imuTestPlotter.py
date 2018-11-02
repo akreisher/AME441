@@ -1,8 +1,18 @@
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
+
+#Params
+dataSet = 3;
+s=11
+
+
 #Open data file
 count = 0
-with open("data/imudata1.txt","r") as f:
+imuFile="data/imudata"+str(dataSet)+".txt"
+motorFile="data/motordata"+str(dataSet)+".txt"
+with open(imuFile,"r") as f:
 	#Get number of data entries
 	for line in f:
 		count=count+1
@@ -11,53 +21,67 @@ with open("data/imudata1.txt","r") as f:
 t=np.empty([count,1])
 roll=np.empty([count,1])
 
-with open("data/imudata1.txt","r") as f:
+with open(imuFile,"r") as f:
 	#Parse data from file
 	for i,line in enumerate(f):
 		data=line.split(",")
 		t[i]=data[0]
 		roll[i]=data[1]
 		
-roll = roll-roll[1]
+roll = -(roll-roll[s])
 
 count1 = 0
-with open("data/motordata.txt","r") as f:
+with open(motorFile,"r") as f:
 	#Get number of data entries
 	for line in f:
 		count1=count1+1
 t1=np.empty([count1,1])
 pos=np.empty([count1,1])
-with open("data/motordata.txt","r") as f:
+with open(motorFile,"r") as f:
 	#Parse data from file
 	for i,line in enumerate(f):
 		data=line.split(",")
 		t1[i]=data[0]
 		pos[i]=data[1]
 
+"""
+for p in pos:
+	if p>90:
+		p = 90-p
+	if p<-90:
+		p = -90-p
+
+		
+"""
+"""
 for i in range(0,count1):
+	
+	
+	
+	
 	num=pos[i]//180
 	if (num>0 and num%2==0):
 		pos[i] = pos[i]-num*180
 	if (num>0 and num%2==1):
 		pos[i] = (num+1)*180-pos[i]
-
-	"""
+"""
+"""
 	if (180<pos[i]<=360):
 		pos[i]=360-pos[i]
 	if (360<pos[i]<=540):
 		pos[i]=pos[i]-360
 	if (540<pos[i]<=720):
 		pos[i]=720-pos[i]
-	"""
+"""
 
 
 
 
 
 #Plot data
-t=(t-t[5])/1000
+t=(t-t[s])/1000
 t1=(t1-t1[0])/1000
-plt.plot(t[5:count-1],roll[5:count-1],'b',label="IMU Roll")
+plt.plot(t[s:count-1],roll[s:count-1],'b',label="IMU Roll")
 plt.plot(t1,pos,'r',label="Motor Position")
 #plt.legend("IMU Yaw", "Motor Position")
 plt.xlabel("Time [s]")

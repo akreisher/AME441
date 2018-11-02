@@ -1,6 +1,8 @@
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
-
+n=7;
 count = 0
 with open("imuContData.txt","r") as f:
 	#Get number of data entries
@@ -20,10 +22,10 @@ with open("imuContData.txt","r") as f:
 		roll[i]=data[2]
 		yaw[i]=data[3]
 
-t1=np.empty([8,1])
-p1=np.empty([8,1])
-r1=np.empty([8,1])
-y1=np.empty([8,1])
+t1=np.empty([n,1])
+p1=np.empty([n,1])
+r1=np.empty([n,1])
+y1=np.empty([n,1])
 with open("imuRec.txt","r") as f:
 	for i,line in enumerate(f):
 		data=line.split(",")

@@ -12,6 +12,7 @@
 #include <utility>
 #include <mutex>
 #include <atomic>
+#include <cmath>
 #include "motor/motorClass.h"
 #include "MilliTimer.h"
 
@@ -33,7 +34,7 @@ void handle_sig(int sig)
 void readIMUData(AHRS* com,int period)
 {
     std::ofstream imuFile;
-    imuFile.open("imudata2.txt");
+    imuFile.open("data/imudata3.txt");
 	printf("Initializing\n\n");
 	float zeroRoll = com->GetRoll();
 	MilliTimer timer;
@@ -57,17 +58,31 @@ int main(int argc, char *argv[]) {
     sigmtx.lock();//lock mtx signal
     signal(SIGINT, handle_sig);//set SIGINT signal handler
     std::ofstream ofile;
-    ofile.open("motordata2.txt");
+    ofile.open("data/motordata3.txt");
     StepperMotor stepper(21,20,1.8);//stepper (dir,step,step angle)
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     AHRS com = AHRS("/dev/ttyACM0");
-    std::thread IMUthread(readIMUData,&com,10);
+    std::thread IMUthread(readIMUData,&com,1);
 	MilliTimer timer;
-   for (int i = 0;i<5;i++)
+   for (int i = 0;i<4;i++)
    {
-        for (int j = 0; j<200;j++)
+	   int rot = pow(2,i)*25;
+
+        for (int j = 0; j<rot;j++)
         {
-            stepper.rotate(1.8,5,0);
+            stepper.step(5,0);
+            ofile<<timer.now()<<","<<stepper.getCurrPos()<<std::endl;
+            
+        }
+        for (int j = 0; j<2*rot;j++)
+        {
+            stepper.step(5,1);
+            ofile<<timer.now()<<","<<stepper.getCurrPos()<<std::endl;
+            
+        }
+        for (int j = 0; j<rot;j++)
+        {
+            stepper.step(5,0);
             ofile<<timer.now()<<","<<stepper.getCurrPos()<<std::endl;
             
         }
