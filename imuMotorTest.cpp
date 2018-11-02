@@ -13,6 +13,7 @@
 #include <mutex>
 #include <atomic>
 #include "motor/motorClass.h"
+#include "MilliTimer.h"
 
 volatile sig_atomic_t sflag = 0;
 std::mutex sigmtx; //signal mutex
@@ -32,9 +33,10 @@ void handle_sig(int sig)
 void readIMUData(AHRS* com,int period)
 {
     std::ofstream imuFile;
-    imuFile.open("imudata1.txt");
+    imuFile.open("imudata2.txt");
 	printf("Initializing\n\n");
 	float zeroRoll = com->GetRoll();
+	MilliTimer timer;
 	while (true){
     	//check for mtx signal
     	if(sigmtx.try_lock()){
@@ -43,7 +45,7 @@ void readIMUData(AHRS* com,int period)
             break;
         }
 
-        imuFile<<com->GetLastSensorTimestamp()<<","<<com->GetRoll()-zeroRoll<<std::endl;
+        imuFile<<timer.now()<<","<<com->GetRoll()-zeroRoll<<std::endl;
 
         std::this_thread::sleep_for(std::chrono::milliseconds(period));
 	}
@@ -55,18 +57,18 @@ int main(int argc, char *argv[]) {
     sigmtx.lock();//lock mtx signal
     signal(SIGINT, handle_sig);//set SIGINT signal handler
     std::ofstream ofile;
-    ofile.open("motordata.txt");
+    ofile.open("motordata2.txt");
     StepperMotor stepper(21,20,1.8);//stepper (dir,step,step angle)
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    AHRS com = AHRS("/dev/ttyACM1");
+    AHRS com = AHRS("/dev/ttyACM0");
     std::thread IMUthread(readIMUData,&com,10);
-
+	MilliTimer timer;
    for (int i = 0;i<5;i++)
    {
         for (int j = 0; j<200;j++)
         {
             stepper.rotate(1.8,5,0);
-            ofile<<com.GetLastSensorTimestamp()<<","<<stepper.getCurrPos()<<std::endl;
+            ofile<<timer.now()<<","<<stepper.getCurrPos()<<std::endl;
             
         }
        
