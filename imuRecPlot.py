@@ -33,6 +33,15 @@ with open("imuRec.txt","r") as f:
 		y1[i]=data[3]
 t=(t)/1000
 t1=(t1)/1000
+"""
+pitch = pitch-pitch[1]
+roll = roll-roll[1]
+yaw = yaw-yaw[1]
+p1 = p1-pitch[1]
+r1 = r1-roll[1]
+y1 = y1-yaw[1]
+"""
+
 plt.plot(t[1:count-1],roll[1:count-1],'g',label="IMU Roll")
 plt.plot(t[1:count-1],pitch[1:count-1],'b',label="IMU Pitch")
 plt.plot(t[1:count-1],yaw[1:count-1],'r',label="IMU Yaw")
