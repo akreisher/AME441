@@ -8,13 +8,24 @@
 #include <signal.h>
 #include <string>
 #include "quaternion.h"
+#include <cmath>
+
+#define PI 3.14159265
 
 int main(){
-	Quaternion q1(1.0,-2.0,3.0,4.0);
-	Quaternion q2(7.0,-3.0,-6.0,8.0);
-	std::cout<<q1.getMag()<<std::endl;
-	q1.normalize();
-	std::cout<<q1.getMag()<<std::endl;
+	Quaternion q((float)cos(PI/4),(float)sin(PI/4),0.0,0.0);
+	
+
+	Quaternion qstar = q.conjugate();
+	
+	std::cout<<q*qstar<<std::endl;
+	Quaternion v(0.0,0.0,1.0,0.0);
+
+	v = (q*v)*qstar;
+	q=Quaternion(1,0,0.0,0.0);
+	v = (q*v)*q.conjugate();
+	std::cout<<"v is "<<v<<std::endl;
+	
 }
 
  

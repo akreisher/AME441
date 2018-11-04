@@ -18,6 +18,10 @@ $(BIN_DIR)/timestamp: TimeStamp.cpp $(BIN_DIR)/AHRS.o $(BIN_DIR)/SerialPort.o $(
 
 $(BIN_DIR)/quattimestamp: QuatTimeStamp.cpp $(BIN_DIR)/AHRS.o $(BIN_DIR)/SerialPort.o $(BIN_DIR)/SerialIO.o $(BIN_DIR)/OffsetTracker.o $(BIN_DIR)/InertialDataIntegrator.o $(BIN_DIR)/ContinuousAngleTracker.o 
 	${CXX} ${CPPFLAGS} $^ -o $@ 
+$(BIN_DIR)/quatRec: quatRec.cpp $(BIN_DIR)/AHRS.o $(BIN_DIR)/SerialPort.o $(BIN_DIR)/SerialIO.o $(BIN_DIR)/OffsetTracker.o $(BIN_DIR)/InertialDataIntegrator.o $(BIN_DIR)/ContinuousAngleTracker.o 
+	${CXX} ${CPPFLAGS} $^ -o $@ 
+$(BIN_DIR)/doubleIMU: doubleIMU.cpp $(BIN_DIR)/AHRS.o $(BIN_DIR)/SerialPort.o $(BIN_DIR)/SerialIO.o $(BIN_DIR)/OffsetTracker.o $(BIN_DIR)/InertialDataIntegrator.o $(BIN_DIR)/ContinuousAngleTracker.o 
+	${CXX} ${CPPFLAGS} $^ -o $@ 
 	
 $(BIN_DIR)/imuRecord: imuRecord.cpp $(BIN_DIR)/AHRS.o $(BIN_DIR)/SerialPort.o $(BIN_DIR)/SerialIO.o $(BIN_DIR)/OffsetTracker.o $(BIN_DIR)/InertialDataIntegrator.o $(BIN_DIR)/ContinuousAngleTracker.o 
 	${CXX} ${CPPFLAGS} $^ -o $@ 

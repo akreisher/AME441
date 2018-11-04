@@ -1,4 +1,5 @@
 bin/
+
 # Ignore all
 *
 
@@ -35,6 +36,7 @@ bin/
 *.log
 *.sql
 *.sqlite
+*.txt
 
 # OS generated files #
 ######################
