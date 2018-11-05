@@ -1,35 +1,37 @@
 #include <iostream>
 #include "motorSim.h"
 
-MotorSim::MotorSim(float stepAngle)
+
+MotorSim::MotorSim(float stepAngle, std::ostream* os)
 {
 	wiringPiSetupSys();
+	this->os = os;
 	this->stepAngle = stepAngle;
 	this->currPos = 0;
+	timer=MilliTimer();
+	
 }
 
-void MotorSim::rotate(float angle, float speed,bool dir)
+void MotorSim::rotate(float angle, float time, bool dir)
 {
-	float dt = stepAngle/(2*speed);
 	int numSteps = angle/stepAngle;
 	for (int i = 0;i<numSteps;i++){
 		if (dir==CW) currPos-=stepAngle;
 		else currPos+=stepAngle;
-		
-		delay(dt);
-		std::cout<<currPos<<std::endl;
-		delay(dt);
+		delay(time);
+		*os<<timer.now()<<","<<currPos<<std::endl;
+		delay(time);
 		
 	}
 }
 
-void MotorSim::rotateToPos(float newPos, float speed,bool dir)
+void MotorSim::rotateToPos(float newPos, float time,bool dir)
 {
 	float angle;
 	if (dir==CW) angle = currPos-newPos;
 	else angle = newPos-currPos;
 	if (angle<0) angle = -angle;
-	rotate(angle,speed,dir);
+	rotate(angle,time,dir);
 }
 
 void MotorSim::step(int dt, bool dir)
@@ -37,12 +39,13 @@ void MotorSim::step(int dt, bool dir)
 	if (dir==CW) currPos-=stepAngle;
 	else currPos+=stepAngle;
 	delay(dt/2);
-	std::cout<<currPos<<std::endl;
+	*os<<currPos<<std::endl;
 	delay(dt/2);
 }
 void MotorSim::setZero()
 {
 	currPos=0;
+	timer.reset();
 }
 
 float MotorSim::getCurrPos()

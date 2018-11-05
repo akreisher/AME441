@@ -19,19 +19,21 @@ void handle_sig(int sig)
 
 
 int main(int argc, char *argv[]) {
-	int num;
+	int num1, num2;
 	if (argc >1){
-		num = atoi(argv[1]);
+		num1 = atoi(argv[1]);
+		num2 = atoi(argv[2]);
 	}
 	else{
-		num = 0;
+		num1 = 0;
+		num2 = 1;
 	}
     std::cout << "Program Executing\n";
     signal(SIGINT, handle_sig);
-	std::string ser = "/dev/ttyACM"+std::to_string(num);
-	std::cout<<ser<<std::endl;
-    AHRS com1 = AHRS(ser.c_str());
-    AHRS com2 = AHRS("/dev/ttyACM3");
+	std::string ser1 = "/dev/ttyACM"+std::to_string(num1);
+	std::string ser2 = "/dev/ttyACM"+std::to_string(num2);
+    AHRS com1 = AHRS(ser1.c_str());
+    AHRS com2 = AHRS(ser2.c_str());
     Quaternion v1(0.0,0.0,1.0,0.0);
     Quaternion v2(0.0,0.0,1.0,0.0);
     std::ofstream ofile;
@@ -40,11 +42,11 @@ int main(int argc, char *argv[]) {
     printf("Initializing\n\n");
 	
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 
 
     std::cout << "QuatX | QuatY | QuatZ | Time |" << std::endl;
-	int count = 0;
+
 	Quaternion q1prev(&com1);
 	Quaternion q2prev(&com2);
     while( 1 == 1){
@@ -62,11 +64,6 @@ int main(int argc, char *argv[]) {
         v2 = v2.rotate(q1);
         ofile<<v1.getX()<<","<<v1.getY()<<","<<v1.getZ()<<","<<v2.getX()<<","<<v2.getY()<<","<<v2.getZ()<<std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        count ++;
-        if (count ==1){
-			count = 0;
-			//std::cout << std::fixed << std::setprecision(2) << v.getX()<< "   " << v.getY() << "     " << v.getZ() << "     " << com1.GetLastSensorTimestamp() << "      " << '\r' << std::flush;
-		}
 			
 			
         if(sflag){
@@ -79,6 +76,7 @@ int main(int argc, char *argv[]) {
     
     }
     printf("\nExit Caught... Closing device.\n");
+    system("python animD3D.py");
 
     return 0;
 }

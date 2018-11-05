@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <signal.h>
 #include <string>
+#include "quaternion.h"
 
 volatile sig_atomic_t sflag = 0;
 
@@ -22,8 +23,9 @@ int main(int argc, char *argv[]) {
 		num = atoi(argv[1]);
 	}
 	else{
-		num = 0;
+		num = 1;
 	}
+	bool flip = false;
     std::cout << "Program Executing\n";
     signal(SIGINT, handle_sig);
 	std::string ser = "/dev/ttyACM"+std::to_string(num);
@@ -32,14 +34,16 @@ int main(int argc, char *argv[]) {
 
     printf("Initializing\n\n");
 
-
+	std::cout<<flip<<std::endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
 
     std::cout << "QuatW  | QuatX | QuatY | QuatZ | Time |" << std::endl;
-
+	Quaternion qRef(&com,flip);
     while( 1 == 1){
-        std::cout << std::fixed << std::setprecision(2) << com.GetQuaternionW() << "      " << com.GetQuaternionX()<< "   " << com.GetQuaternionY() << "     " <<com.GetQuaternionZ() << "     " << com.GetLastSensorTimestamp() << "      " << '\r' << std::flush;
+		Quaternion q(&com,flip);
+		//q=q/qRef;
+        std::cout << std::fixed << std::setprecision(2) << q.getW() << "      " << q.getX()<< "   " << q.getY() << "     " << q.getZ() << "     " << com.GetLastSensorTimestamp() << "      " << '\r' << std::flush;
         std::this_thread::sleep_for(std::chrono::milliseconds(125));
         if(sflag){
             sflag = 0;

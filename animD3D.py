@@ -16,7 +16,7 @@ def orthogonal_proj(zfront, zback):
 
 def update_plot(frame,data,lines):
 	for line in lines:
-		line.set_data([0,data[0,frame],data[3,frame]],[0,data[1,frame],data[4,frame]],)
+		line.set_data([0,data[0,frame],data[3,frame]],[0,-data[1,frame],-data[4,frame]],)
 		line.set_3d_properties([0,data[2,frame],data[5,frame]])
 	return lines
 
@@ -40,8 +40,8 @@ with open("data/dqfile.txt") as f:
 fig = plt.figure()
 ax = p3.Axes3D(fig)
 
-line = ax.plot([0,data[0,0],data[3,0]],[0,data[1,0],data[4,0]],[0,data[2,0],data[5,0]],linewidth=2)
-dots = ax.plot([0,data[0,0],data[3,0]],[0,data[1,0],data[4,0]],[0,data[2,0],data[5,0]],linestyle="",marker="o",c='r')
+line = ax.plot([0,data[0,0],data[3,0]],[0,-data[1,0],-data[4,0]],[0,data[2,0],data[5,0]],linewidth=2)
+dots = ax.plot([0,data[0,0],data[3,0]],[0,-data[1,0],-data[4,0]],[0,data[2,0],data[5,0]],linestyle="",marker="o",c='r')
 
 lines=line+dots
 

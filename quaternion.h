@@ -13,8 +13,10 @@ public:
 	}
 	Quaternion(AHRS* com){
 		this->w=com->GetQuaternionW();
-		this->x=com->GetQuaternionX();
-		this->y=com->GetQuaternionY();
+
+			this->x=com->GetQuaternionX();
+			this->y=com->GetQuaternionY();
+		
 		this->z=com->GetQuaternionZ();
 		this->mag = this->calcMag();
 	}
