@@ -28,7 +28,7 @@ def ikin(goal):
 	if (r>2):
 		return State(-100,r,0)
 	x=goal.x
-	t1=(math.pi/2)-math.atan2(goal.y,-goal.z)
+	t1=math.atan2(-goal.z,goal.y)
 	y=goal.y*math.cos(t1)-goal.z*math.sin(t1)
 	t3=math.acos(((x**2)+(y**2)-(l1**2)-(l2**2))/(2*l1*l2))
 	t2=math.atan2(y,x)-math.atan2(l2*math.sin(t3),l1+l2*math.cos(t3))
@@ -68,7 +68,10 @@ def orthogonal_proj(zfront, zback):
                         [0,0,-0.0001,zback]])
 
 def update_plot(frame,data,model,lines):
-	lines[0].set_data([0,data[0,frame],data[3,frame]],[0,-data[1,frame],-data[4,frame]],)
+	if (frame<=50):
+		return lines
+	frame = frame - 50
+	lines[0].set_data([0,data[0,frame],data[3,frame]],[0,-data[1,frame],-data[4,frame]])
 	lines[0].set_3d_properties([0,data[2,frame],data[5,frame]])
 
 	if (model[0,frame]==-100):
@@ -77,8 +80,11 @@ def update_plot(frame,data,model,lines):
 		lines[1].set_data([0,model[0,frame],model[3,frame]],[0,model[1,frame],model[4,frame]],)
 		lines[1].set_3d_properties([0,model[2,frame],model[5,frame]])
 
-	lines[2].set_data([0,data[0,frame],data[3,frame]],[0,-data[1,frame],-data[4,frame]],)
+	lines[2].set_data([0,data[0,frame],data[3,frame]],[0,-data[1,frame],-data[4,frame]])
 	lines[2].set_3d_properties([0,data[2,frame],data[5,frame]])
+
+	lines[3].set_data([model[0,frame]],[model[1,frame]])
+	lines[3].set_3d_properties([model[2,frame]])
 	return lines
 
 
@@ -89,6 +95,8 @@ with open("data/dqfile.txt") as f:
 		
 data = np.empty([6,count])
 model = np.empty([6,count])
+rms = np.zeros([3,1])
+
 with open("data/dqfile.txt") as f:
 	for i,line in enumerate(f):
 		dat = line.split(",")
@@ -108,6 +116,19 @@ with open("data/dqfile.txt") as f:
 		model[3,i]=v.x
 		model[4,i]=v.y
 		model[5,i]=v.z
+		rms[0] = rms[0]+((data[3,i]-model[3,i])**2)
+		rms[1] = rms[1]+((-data[4,i]-model[4,i])**2)
+		rms[2] = rms[2]+((data[5,i]-model[5,i])**2)
+rms=rms/count
+rms[0] = math.sqrt(rms[0])
+rms[1] = math.sqrt(rms[1])
+rms[2] = math.sqrt(rms[2])
+print("rms x = "+str(rms[0]))
+print("rms y = "+str(rms[1]))
+print("rms z = "+str(rms[2]))
+
+
+
 
 
 
@@ -116,14 +137,14 @@ with open("data/dqfile.txt") as f:
 fig = plt.figure()
 ax = p3.Axes3D(fig)
 
-iline = ax.plot([0,data[0,0],data[3,0]],[0,-data[1,0],-data[4,0]],[0,data[2,0],data[5,0]],linewidth=4)
-rline = ax.plot([0,model[0,0],model[3,0]],[0,model[1,0],model[4,0]],[0,model[2,0],model[5,0]],linewidth=4,c="g")
-dots = ax.plot([0,data[0,0],data[3,0]],[0,-data[1,0],-data[4,0]],[0,data[2,0],data[5,0]],linestyle="",marker="o",c='r')
-
-lines=iline+rline+dots
+iline = ax.plot([0,data[0,0],data[3,0]],[0,-data[1,0],-data[4,0]],[0,data[2,0],data[5,0]],linewidth=4,label="IMU Data")
+rline = ax.plot([0,model[0,0],model[3,0]],[0,model[1,0],model[4,0]],[0,model[2,0],model[5,0]],linewidth=4,c="g",label="Inverse Kinematics")
+idots = ax.plot([0,data[0,0],data[3,0]],[0,-data[1,0],-data[4,0]],[0,data[2,0],data[5,0]],linestyle="",marker="o",c='r')
+rdots = ax.plot([model[0,0]],[model[1,0]],[model[2,0]],linestyle="",marker="o",c='r')
+lines=iline+rline+idots+rdots
 
 proj3d.persp_transformation = orthogonal_proj
-
+ax.legend()
 ax.set_xlim3d([0,4.0])
 ax.set_xlabel("Y")
 ax.set_ylim3d([-2,2.0])
@@ -132,6 +153,6 @@ ax.set_zlim3d([-2.0,2.0])
 ax.set_zlabel("Z")
 #ax.view_init(0,90)
 
-line_ani= animation.FuncAnimation(fig,update_plot,count, fargs=(data,model,lines), interval=100, blit=True)
+line_ani= animation.FuncAnimation(fig,update_plot,count+50, fargs=(data,model,lines), interval=100, blit=True)
 		
 plt.show()

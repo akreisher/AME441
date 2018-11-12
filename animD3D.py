@@ -13,8 +13,11 @@ def orthogonal_proj(zfront, zback):
                         [0,1,0,0],
                         [0,0,a,b],
                         [0,0,-0.0001,zback]])
-
+n=25
 def update_plot(frame,data,lines):
+	if (frame<=n):
+		return lines
+	frame = frame - n
 	for line in lines:
 		line.set_data([0,data[0,frame],data[3,frame]],[0,-data[1,frame],-data[4,frame]],)
 		line.set_3d_properties([0,data[2,frame],data[5,frame]])
@@ -40,8 +43,8 @@ with open("data/dqfile.txt") as f:
 fig = plt.figure()
 ax = p3.Axes3D(fig)
 
-line = ax.plot([0,data[0,0],data[3,0]],[0,-data[1,0],-data[4,0]],[0,data[2,0],data[5,0]],linewidth=2)
-dots = ax.plot([0,data[0,0],data[3,0]],[0,-data[1,0],-data[4,0]],[0,data[2,0],data[5,0]],linestyle="",marker="o",c='r')
+line = ax.plot([0,data[0,0],data[3,0]],[0,-data[1,0],-data[4,0]],[0,data[2,0],data[5,0]],linewidth=5)
+dots = ax.plot([0,data[0,0],data[3,0]],[0,-data[1,0],-data[4,0]],[0,data[2,0],data[5,0]],linestyle="",marker="o",c='r',mew=6,ms=3)
 
 lines=line+dots
 
@@ -56,6 +59,6 @@ ax.set_zlim3d([-2.0,2.0])
 ax.set_zlabel("Z")
 #ax.view_init(0,90)
 
-line_ani= animation.FuncAnimation(fig,update_plot,count, fargs=(data,lines), interval=100, blit=True)
+line_ani= animation.FuncAnimation(fig,update_plot,count+n, fargs=(data,lines), interval=140, blit=True)
 		
 plt.show()

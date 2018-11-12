@@ -1,10 +1,19 @@
 #include <wiringPi.h>
 //Stepper class for RPI. Compile with -lwiringPi flag
+
+
+struct StepperInfo
+{
+	int dirPin, stepPin;
+	float angle;
+};
+
 class StepperMotor 
 {
 	public:
 		//constructor, takes pins and step size, sets zero pos to curr pos
 		StepperMotor(int dirPin, int stepPin, float stepAngle);
+		StepperMotor(StepperInfo motI):StepperMotor(motI.dirPin,motI.stepPin,motI.angle){}
 		//perform one step
 		void step(int time, bool dir);
 		//rotate a certain number of degrees

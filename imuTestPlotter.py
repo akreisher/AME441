@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 #Params
-dataSet = 3;
-s=11
+dataSet = 2;
+s=2
 
 
 #Open data file
@@ -28,7 +28,7 @@ with open(imuFile,"r") as f:
 		t[i]=data[0]
 		roll[i]=data[1]
 		
-roll = -(roll-roll[s])
+roll = (roll)
 
 count1 = 0
 with open(motorFile,"r") as f:
@@ -53,7 +53,7 @@ for p in pos:
 
 		
 """
-"""
+
 for i in range(0,count1):
 	
 	
@@ -64,7 +64,9 @@ for i in range(0,count1):
 		pos[i] = pos[i]-num*180
 	if (num>0 and num%2==1):
 		pos[i] = (num+1)*180-pos[i]
-"""
+
+pos = pos-90
+
 """
 	if (180<pos[i]<=360):
 		pos[i]=360-pos[i]
@@ -84,6 +86,9 @@ t1=(t1-t1[0])/1000
 plt.plot(t[s:count-1],roll[s:count-1],'b',label="IMU Roll")
 plt.plot(t1,pos,'r',label="Motor Position")
 #plt.legend("IMU Yaw", "Motor Position")
+plt.xlim([-0.1,6.1])
+plt.ylim([-95,95])
+plt.yticks([-90,-60,-30,0,30,60,90])
 plt.xlabel("Time [s]")
 plt.ylabel("Angle [deg]")
 plt.legend()
