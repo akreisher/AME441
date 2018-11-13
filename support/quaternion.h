@@ -1,6 +1,6 @@
 #include <cmath>
 #include <iostream>
-#include "navX/AHRS.h"
+#include "../navX/AHRS.h"
 
 class Quaternion{
 public:
@@ -20,12 +20,21 @@ public:
 		this->z=com->GetQuaternionZ();
 		this->mag = this->calcMag();
 	}
+	
+	Quaternion operator+(Quaternion b)
+	{
+		return Quaternion(w+b.w,x+b.x,y+b.y,z+b.z);
+	}
+	
 	Quaternion operator*(Quaternion b){
 		float cw = this->w*b.w - this->x*b.x - this->y*b.y - this->z*b.z;
 		float cx = this->w*b.x + this->x*b.w + this->y*b.z - this->z*b.y;
 		float cy = this->w*b.y - this->x*b.z + this->y*b.w + this->z*b.x;
 		float cz = this->w*b.z + this->x*b.y - this->y*b.x + this->z*b.w;
 		return Quaternion(cw,cx,cy,cz);
+	}
+	Quaternion operator*(float b){		
+		return Quaternion(b*w,b*x,b*y,b*z);
 	}
 	Quaternion operator/(Quaternion b){
 		return (*this)*(b.conjugate());

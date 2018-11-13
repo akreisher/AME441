@@ -3,28 +3,40 @@
 class ArmRecorder
 {
 public:
+	struct AngularVelocity
+	{
+		float omega_x, omega_y, omega_z;
+	}
+
+
 	ArmRecorder(int num1, int num2)
 	{
 		std::string ser1 = "/dev/ttyACM"+std::to_string(num1);
 		std::string ser2 = "/dev/ttyACM"+std::to_string(num2);
-		upIMU=AHRS(ser1);
-		lowIMU=AHRS(ser2);
+		//Raw data constructors
+		upIMU=AHRS(ser1,AHRS::SerialDataType::kRawData,60);
+		lowIMU=AHRS(ser2,AHRS::SerialDataType::kRawData,60);
 	}
 
 	void Run(RaceQueue<Coordinates>& q)
 	{
+		//set running
 		running = true;
+		//start data reading thread
 		runThread = std::thread(ReadData, q);
+		//wait
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
 
 	void ReadData(RaceQueue<Coordinates>& q)
 	{
+		//Vectors representing linkages
 		Quaternion l1(0.0,0.0,1.0,0.0);
 		Quaternion l2(0.0,0.0,1.0,0.0);
 
-		Quaternion q1prev(&upIMU);
-		Quaternion q2prev(&lowIMU);
+		//initial pos
+		Quaternion q1prev(1.0,0.0,0.0,0.0);
+		Quaternion q2prev(1.0,0.0,0.0,0.0);
 
 		while (running)
 		{

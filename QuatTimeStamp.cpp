@@ -7,7 +7,9 @@
 #include <iomanip>
 #include <signal.h>
 #include <string>
-#include "quaternion.h"
+#include "support/IMUQuatReader.h"
+
+
 
 volatile sig_atomic_t sflag = 0;
 
@@ -25,29 +27,29 @@ int main(int argc, char *argv[]) {
 	else{
 		num = 1;
 	}
-	bool flip = false;
+	
     std::cout << "Program Executing\n";
     signal(SIGINT, handle_sig);
+    /*
 	std::string ser = "/dev/ttyACM"+std::to_string(num);
 	std::cout<<ser<<std::endl;
     AHRS com = AHRS(ser.c_str());
-
+    * */
+	IMUQuatReader read(0);
     printf("Initializing\n\n");
 
-	std::cout<<flip<<std::endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
 
     std::cout << "QuatW  | QuatX | QuatY | QuatZ | Time |" << std::endl;
-	Quaternion qRef(&com,flip);
     while( 1 == 1){
-		Quaternion q(&com,flip);
+		Quaternion q =  read.getQuat();
 		//q=q/qRef;
-        std::cout << std::fixed << std::setprecision(2) << q.getW() << "      " << q.getX()<< "   " << q.getY() << "     " << q.getZ() << "     " << com.GetLastSensorTimestamp() << "      " << '\r' << std::flush;
+        std::cout << std::fixed << std::setprecision(2) << q.getW() << "      " << q.getX()<< "   " << q.getY() << "     " << q.getZ() << "     " << "      " << '\r' << std::flush;
         std::this_thread::sleep_for(std::chrono::milliseconds(125));
         if(sflag){
             sflag = 0;
-            com.Close();
+            read.Close();
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             break;
         }
