@@ -26,12 +26,12 @@ void sendRotCommand(StepperMotor* mot, std::string com, float angle, long delay,
 
 int main(){
 	//dir,step,angle
-	StepperMotor mot1(20,21,0.9);
-	StepperMotor mot2(23,24,1.8);
+	StepperMotor mot1(21,20,1.8);
+	StepperMotor mot2(27,17,0.9);
 	while (true){
 		std::cout<<"Motor 1 Position: "<<mot1.getCurrPos()<<std::endl;
 		std::cout<<"Motor 2 Position: "<<mot2.getCurrPos()<<std::endl;
-		std::cout<<"Command (mot#, com, Angle, dir, delay): ";
+		std::cout<<"Command (mot#, com, Angle, delay, dir): ";
 		std::string command;
 	 	getline(std::cin,command);
 	 	std::istringstream stream(command);
@@ -53,11 +53,14 @@ int main(){
 		 	bool dir;
 		 	long delay;
 		 	stream>>angle>>delay>>dir;
-			if (motNum==1){
+			if (motNum==1)
+			{
+				std::cout<<" Rotating 1"<<std::endl;
 				std::thread mot1Thread(sendRotCommand,&mot1,com,angle,delay,dir);
 				mot1Thread.join();
 			}
 			else if (motNum==2){
+				std::cout<<" Rotating 2"<<std::endl;
 				std::thread mot2Thread(sendRotCommand,&mot2,com,angle,delay,dir);
 				mot2Thread.join();
 			}
@@ -67,7 +70,7 @@ int main(){
 					float angle2;
 				 	bool dir2;
 				 	long delay2;
-				 	stream>>angle2>>delay2>>dir2;
+				 	stream>>com2>>angle2>>delay2>>dir2;
 				 	std::thread mot1Thread(sendRotCommand,&mot1,com,angle,delay,dir);
 					std::thread mot2Thread(sendRotCommand,&mot2,com2,angle2,delay2,dir2);
 					mot1Thread.join();

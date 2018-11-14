@@ -1,24 +1,25 @@
 #include <string>
 #include <thread>
+#include "support/IMUQuatReader.h"
+#include <queue>
+
+
+struct AngularVelocity
+	{
+		float omega_x, omega_y, omega_z;
+	};
+	
 class ArmRecorder
 {
 public:
-	struct AngularVelocity
-	{
-		float omega_x, omega_y, omega_z;
-	}
+	
 
 
 	ArmRecorder(int num1, int num2)
 	{
-		std::string ser1 = "/dev/ttyACM"+std::to_string(num1);
-		std::string ser2 = "/dev/ttyACM"+std::to_string(num2);
-		//Raw data constructors
-		upIMU=AHRS(ser1,AHRS::SerialDataType::kRawData,60);
-		lowIMU=AHRS(ser2,AHRS::SerialDataType::kRawData,60);
 	}
 
-	void Run(RaceQueue<Coordinates>& q)
+	void Run(std::queue<Coordinates>& q)
 	{
 		//set running
 		running = true;
@@ -27,33 +28,33 @@ public:
 		//wait
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
+	
 
-	void ReadData(RaceQueue<Coordinates>& q)
+	static void ReadData(std::queue<Coordinates>& queue)
 	{
 		//Vectors representing linkages
-		Quaternion l1(0.0,0.0,1.0,0.0);
-		Quaternion l2(0.0,0.0,1.0,0.0);
+		Quaternion v1(0.0,0.0,1.0,0.0);
+		Quaternion v2(0.0,0.0,1.0,0.0);
 
 		//initial pos
-		Quaternion q1prev(1.0,0.0,0.0,0.0);
-		Quaternion q2prev(1.0,0.0,0.0,0.0);
+		Quaternion q1prev = upIMU.getQuat();
+		Quaternion q2prev = lowIMU.getQuat();
 
 		while (running)
 		{
-			Quaternion q1now(&upIMU);
-	        Quaternion q1 = q1now/q1prev;
-	        Quaternion q2now(&lowIMU);
+			Quaternion q1 = upIMU.getQuat();
+	        Quaternion q2now = lowIMU.getQuat();
 	        Quaternion q2 = q2now/q2prev;
 	        q2prev = q2now;
 	        q2=q2/q1;
 	        q1.normalize();
 	        q2.normalize();
-	        q1prev = q1now;
+	        q1prev = q1;
 	        v1 = v1.rotate(q1);
 	        v2 = v2.rotate(q2);
 	        v2 = v2.rotate(q1); 
 
-	       	q.push(Coordinates(v2.getX(),v2.getY(),v2.getZ()));
+	       	queue.push(Coordinates(v2.getX(),v2.getY(),v2.getZ()));
 	       	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
 
@@ -69,8 +70,8 @@ public:
 		lowIMU.Close();
 	}
 private:
-	bool running;
-	AHRS lowIMU;
-	AHRS upIMU;
-	std::thread runThread;
-}
+	static bool running;
+	static IMUQuatReader lowIMU((int)0);
+	static IMUQuatReader upIMU(1);
+	static std::thread runThread;
+};

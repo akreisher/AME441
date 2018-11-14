@@ -1,5 +1,5 @@
 #include "../navX/AHRS.h"
-#include "quaternion.h"
+#include "Kinematics.h"
 #include "MilliTimer.h"
 #define PI 3.14159265
 
@@ -24,7 +24,6 @@ public:
 	Quaternion getQuat()
 	{
 		float tNew = timer.now();
-		
 		float omega_x = PI*com.GetRawGyroX()/180;
 		float omega_y = PI*com.GetRawGyroY()/180;
 		float omega_z = PI*com.GetRawGyroZ()/180;

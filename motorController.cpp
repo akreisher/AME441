@@ -14,6 +14,7 @@ int main(int argc, char* argv [])
 	}
 	else{
 		dirPin = 20;
+		
 		stepPin = 21;
 		angle = 0.9;
 	}

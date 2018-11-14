@@ -11,6 +11,7 @@
 
 
 
+
 volatile sig_atomic_t sflag = 0;
 
 void handle_sig(int sig)
@@ -30,12 +31,10 @@ int main(int argc, char *argv[]) {
 	
     std::cout << "Program Executing\n";
     signal(SIGINT, handle_sig);
-    /*
+  
 	std::string ser = "/dev/ttyACM"+std::to_string(num);
 	std::cout<<ser<<std::endl;
-    AHRS com = AHRS(ser.c_str());
-    * */
-	IMUQuatReader read(0);
+	IMUQuatReader read(num);
     printf("Initializing\n\n");
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));

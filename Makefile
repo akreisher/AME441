@@ -3,6 +3,7 @@ CPPFLAGS = -Wall -g -std=c++11 -pthread
 BIN_DIR = bin
 AHRS_DIR = navX
 MOTOR_DIR = motor
+SUP_DIR = support
 
 all: $(BIN_DIR)/.dirstamp $(BIN_DIR)/pitchControl
 
@@ -28,6 +29,10 @@ $(BIN_DIR)/quatRec: quatRec.cpp $(BIN_DIR)/AHRS.o $(BIN_DIR)/SerialPort.o $(BIN_
 	${CXX} ${CPPFLAGS} $^ -o $@ 
 $(BIN_DIR)/doubleIMU: doubleIMU.cpp $(BIN_DIR)/AHRS.o $(BIN_DIR)/SerialPort.o $(BIN_DIR)/SerialIO.o $(BIN_DIR)/OffsetTracker.o $(BIN_DIR)/InertialDataIntegrator.o $(BIN_DIR)/ContinuousAngleTracker.o 
 	${CXX} ${CPPFLAGS} $^ -o $@ 
+	
+#Arm Recorder test
+$(BIN_DIR)/exp: exp.cpp $(BIN_DIR)/AHRS.o $(BIN_DIR)/SerialPort.o $(BIN_DIR)/SerialIO.o $(BIN_DIR)/OffsetTracker.o $(BIN_DIR)/InertialDataIntegrator.o $(BIN_DIR)/ContinuousAngleTracker.o $(BIN_DIR)/motorClass.o
+	${CXX} ${CPPFLAGS} $^ -o $@ -lwiringPi
 
 #IMU Recording (Euler angles)
 $(BIN_DIR)/imuRecord: imuRecord.cpp $(BIN_DIR)/AHRS.o $(BIN_DIR)/SerialPort.o $(BIN_DIR)/SerialIO.o $(BIN_DIR)/OffsetTracker.o $(BIN_DIR)/InertialDataIntegrator.o $(BIN_DIR)/ContinuousAngleTracker.o 

@@ -14,7 +14,8 @@
 #include <atomic>
 #include <cmath>
 #include "motor/motorClass.h"
-#include "quaternion.h"
+#include "support/IMUQuatReader.h"
+#include <fstream>
 
 #define PI 3.14159265
 
@@ -22,8 +23,8 @@ volatile sig_atomic_t sflag = 0;
 std::mutex sigmtx; //signal mutex
 //queue of yaw data
 std::queue<float> yawData;
-std::queue<long> timeData;
-float initYaw = 0;
+std::queue<float> timeData;
+
 
 
 //directions
@@ -39,9 +40,9 @@ void handle_sig(int sig)
 //IMU thread code, reads in data 
 void readIMUData(int period)
 {
-	AHRS com = AHRS("/dev/ttyACM1");
+	IMUQuatReader com(0);
 	printf("Initializing\n\n");
-
+	MilliTimer timer;
 	while (true){
     	//check for mtx signal
     	if(sigmtx.try_lock()){
@@ -50,18 +51,15 @@ void readIMUData(int period)
             sigmtx.unlock();//unlock mtx
             break;
         }
-		while (initYaw==0.0||initYaw == -0.0)
-		{
-			initYaw=-com.GetYaw();;
-			std::cout<<"Initaw "<<initYaw<<std::endl;
-		}
-		Quaternion q(&com);
+		
+		Quaternion q = com.getQuat();
 
 		float alpha = 2*acos(q.getW());
 		if (q.getZ()<0) alpha = -alpha;
 		
-        yawData.push(180*alpha/PI);
-        timeData.push(com.GetLastSensorTimestamp());
+        yawData.push(-180*alpha/PI);
+        timeData.push(timer.now());
+ //       timeData.push(com.GetLastSensorTimestamp());
 
         std::this_thread::sleep_for(std::chrono::milliseconds(period));
 	}
@@ -69,14 +67,16 @@ void readIMUData(int period)
 }
 
 int main(int argc, char *argv[]) {
+	std::ofstream ofile;
+	ofile.open("data/armdataa3.txt");
     std::cout << "Program Executing\n";
     sigmtx.lock();//lock mtx signal
     signal(SIGINT, handle_sig);//set SIGINT signal handler
-    StepperMotor stepper(21,20,0.9);//stepper (dir,step,step angle)
+    StepperMotor stepper(27,17,0.9);//stepper (dir,step,step angle)
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-    std::thread IMUthread(readIMUData,100);
-
+	stepper.setLimits(-90,90);
+    std::thread IMUthread(readIMUData,10);
+	MilliTimer timer;
     while(true){
     	//get SIGINT signal
     	if(sflag){
@@ -91,6 +91,7 @@ int main(int argc, char *argv[]) {
 			float prevYaw = yawData.front();
 			//float deltaTheta = yawData.front();
 			yawData.pop();
+			timeData.pop();
 			float newYaw = yawData.front();
 			//long prevTime = timeData.front();
 			//timeData.pop();
@@ -100,8 +101,9 @@ int main(int argc, char *argv[]) {
 			float deltaTheta = newYaw-prevYaw;
 			//long deltat=(newTime-prevTime)/1000;
 
-			if (deltaTheta>0) stepper.rotateToPos(newYaw,5,CCW);
-			else stepper.rotateToPos(newYaw,5,CW);
+			if (deltaTheta>0) stepper.rotateToPos(newYaw,3,CCW);
+			else stepper.rotateToPos(newYaw,3,CW);
+			ofile<<timeData.front()<<","<<newYaw<<std::endl;
             float motorPos = stepper.getCurrPos();
             std::cout <<"Yaw: " << newYaw<< " Motor pos: " << motorPos<<std::endl;
             
