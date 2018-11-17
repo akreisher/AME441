@@ -1,6 +1,7 @@
 #include "../navX/AHRS.h"
 #include "Kinematics.h"
 #include "MilliTimer.h"
+#include <cmath>
 #define PI 3.14159265
 
 class IMUQuatReader	
@@ -34,6 +35,11 @@ public:
 		rot.normalize();
 		return rot;
 		
+	}
+	
+	float getRotAng()
+	{
+		return 2*acos(rot.getW());
 	}
 	
 	void Close()

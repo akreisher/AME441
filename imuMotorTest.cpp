@@ -14,7 +14,7 @@
 #include <atomic>
 #include <cmath>
 #include "motor/motorClass.h"
-#include "MilliTimer.h"
+#include "support/IMUQuatReader.h"
 
 volatile sig_atomic_t sflag = 0;
 std::mutex sigmtx; //signal mutex
@@ -31,22 +31,26 @@ void handle_sig(int sig)
 }
 
 //IMU thread code, reads in data 
-void readIMUData(AHRS* com,int period)
+void readIMUData(int period)
 {
+	IMUQuatReader com(1);
     std::ofstream imuFile;
-    imuFile.open("data/imudata3.txt");
+    imuFile.open("data/newimudata6.txt");
 	printf("Initializing\n\n");
-	float zeroRoll = com->GetRoll();
+
 	MilliTimer timer;
 	while (true){
     	//check for mtx signal
     	if(sigmtx.try_lock()){
             sigmtx.unlock();//unlock mtx
             imuFile.close();
+             com.Close();
             break;
         }
+		Quaternion q = com.getQuat();
 
-        imuFile<<timer.now()<<","<<com->GetRoll()-zeroRoll<<std::endl;
+		float alpha = 2*acos(q.getW());
+        imuFile<<timer.now()<<","<<alpha<<std::endl;
 
         std::this_thread::sleep_for(std::chrono::milliseconds(period));
 	}
@@ -58,41 +62,29 @@ int main(int argc, char *argv[]) {
     sigmtx.lock();//lock mtx signal
     signal(SIGINT, handle_sig);//set SIGINT signal handler
     std::ofstream ofile;
-    ofile.open("data/motordata3.txt");
+    ofile.open("data/newmotordata6.txt");
     StepperMotor stepper(21,20,1.8);//stepper (dir,step,step angle)
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    AHRS com = AHRS("/dev/ttyACM0");
-    std::thread IMUthread(readIMUData,&com,1);
+    std::thread IMUthread(readIMUData,1);
 	MilliTimer timer;
-   for (int i = 0;i<4;i++)
+
+   for (int i = 0;i<10;i++)
    {
-	   int rot = pow(2,i)*25;
+	   int rot = 200;
 
         for (int j = 0; j<rot;j++)
-        {
-            stepper.step(5,0);
-            ofile<<timer.now()<<","<<stepper.getCurrPos()<<std::endl;
-            
-        }
-        for (int j = 0; j<2*rot;j++)
         {
             stepper.step(5,1);
             ofile<<timer.now()<<","<<stepper.getCurrPos()<<std::endl;
             
         }
-        for (int j = 0; j<rot;j++)
-        {
-            stepper.step(5,0);
-            ofile<<timer.now()<<","<<stepper.getCurrPos()<<std::endl;
-            
-        }
-       
-      
    }
+
     	sigmtx.unlock();
+    	IMUthread.join();
         
         ofile.close();
-        com.Close();
+       system("python imuTestPlotter.py");
 
 
 

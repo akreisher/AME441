@@ -1,116 +1,149 @@
 #include <iostream>
+#include <fstream>
 #include <stdio.h>
+#include <cstring>
 #include <stdlib.h>
 #include "navX/AHRS.h"
 #include <chrono>
 #include <thread>
 #include <iomanip>
 #include <signal.h>
-#include <string>
-#include "support/IMUQuatReader.h"
-#include "motor/motorClass.h"
 #include <wiringPi.h>
 #include <queue>
+#include <utility>
+#include <mutex>
+#include <atomic>
 #include <cmath>
+#include "motor/motorClass.h"
+#include "support/IMUQuatReader.h"
+#include <fstream>
 
-std::queue<float> qu;
+#define PI 3.14159265
+
 volatile sig_atomic_t sflag = 0;
+std::mutex sigmtx; //signal mutex
+//queue of yaw data
+std::queue<float> yawData;
+std::queue<float> timeData;
 
+
+
+//directions
+const bool CW = 1;
+const bool CCW = 0;
+
+//SIGINT handler
 void handle_sig(int sig)
 {
     sflag = 1;
 }
 
-void threadFunc()
+//IMU thread code, reads in data 
+void readIMUData(int period)
 {
-	IMUQuatReader upIMU(0);
-	IMUQuatReader lowIMU(1);
+	IMUQuatReader com1(0);
+	IMUQuatReader com2(1);
+	printf("Initializing\n\n");
+	MilliTimer timer;
 	
-	Quaternion v1(0.0,0.0,1.0,0.0);
-	//Quaternion v2(0.0,0.0,1.0,0.0);
-
-		//initial pos
-	Quaternion q1prev = upIMU.getQuat();
-		//Quaternion q2prev = lowIMU.getQuat();
-
-	while (true)
-	{
-		if(sflag){
-			upIMU.Close();
-			lowIMU.Close();
+	Quaternion q1prev= com1.getQuat();
+	Quaternion q2prev(&com2);
+	while( 1 == 1){
+		if(sigmtx.try_lock()){
+			com.Close();//close AHRS
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+			sigmtx.unlock();//unlock mtx
 			break;
 		}
-		Quaternion q = upIMU.getQuat();
-		float alpha = acos(q.getW())*2.0;
-		//std::cout<<alpha<<std::endl;
-		qu.push(alpha);
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-			/*
-			Quaternion q1 = upIMU.getQuat();
-	        Quaternion q2now = lowIMU.getQuat();
-	        Quaternion q2 = q2now/q2prev;
-	        q2prev = q2now;
-	        q2=q2/q1;
-	        q1.normalize();
-	        q2.normalize();
-	        q1prev = q1;
-	        v1 = v1.rotate(q1);
-	        v2 = v2.rotate(q2);
-	        v2 = v2.rotate(q1); 
-
-	       	queue->push(Coordinates(v2.getX(),v2.getY(),v2.getZ()));
-	       		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-			}
-			* */
-		}
-}
-
-
-int main()
-{
-	signal(SIGINT, handle_sig);
-	std::thread sThread(threadFunc);
-	int dirPin,stepPin;
-	dirPin=27;
-	stepPin=17;
-	float angle = 0.9;
-	StepperMotor mot = StepperMotor(dirPin,stepPin,angle);
-	Quaternion qPrev(1.0,0.0,0.0,0.0);
-	float theta = 0;
-	while (true)
-	{
-		if (sflag)
-		{
-			sThread.join();
-			break;
-		}
-		if (qu.size()>2)
-		{
-			/*
-			Quaternion qNew  = qu.front();
-			Quaternion q = q;
-			std::cout<<q.getW()<<std::endl;
-			qPrev=qNew;
-			qu.pop();
-			float w = q.getW();
-			float alpha = acos(w)*2.0;
-			bool dir = 0;
-			theta = alpha;
-			* */
-					bool dir = 0;
-			float alpha = qu.front();
-			std::cout<<alpha<<std::endl;
+		Quaternion q1now(&com1);
+		Quaternion q1 = q1now/q1prev;
+		Quaternion q2now(&com2);
+		Quaternion q2 = q2now/q2prev;
+		q2prev = q2now;
+		q2=q2/q1;
+		q1.normalize();
+		q2.normalize();
+		q1prev = q1now;
+		v1 = v1.rotate(q1);
+		v2 = v2.rotate(q2);
+		v2 = v2.rotate(q1);
+		ofile<<v1.getX()<<","<<v1.getY()<<","<<v1.getZ()<<","<<v2.getX()<<","<<v2.getY()<<","<<v2.getZ()<<std::endl;
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			
-			if (alpha<0)
-			{
-				alpha = -alpha;
-				dir = 1;
-			}
-			mot.rotateToPos(theta,5,dir);
-			//std::cout<<theta<<std::endl;
-			//std::cout << q.getW() << "      " << q.getX()<< "   " << q.getY() << "     " << q.getZ() << "     " << "      " <<std::endl;
-		}
+		float alpha = 2*acos(q.getW());
+		if (q.getZ()<0) alpha = -alpha;
+		
+        yawData.push(-180*alpha/PI);
+        timeData.push(timer.now());
+ //       timeData.push(com.GetLastSensorTimestamp());
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(period));
 	}
-	
+
 }
+
+int main(int argc, char *argv[]) {
+	std::string file("data/");;
+	std::string filename;
+	if (argc>1)
+	{
+		filename= argv[1];
+	}
+	else
+	{
+		filename="expdata.txt";
+	}
+	file=file+filename;
+	std::cout<<filename<<std::endl;
+	std::ofstream ofile;
+	ofile.open(filename);
+    std::cout << "Program Executing\n";
+    sigmtx.lock();//lock mtx signal
+    signal(SIGINT, handle_sig);//set SIGINT signal handler
+    StepperMotor stepper(27,17,0.9);//stepper (dir,step,step angle)
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	stepper.setLimits(-90,90);
+    std::thread IMUthread(readIMUData,10);
+	MilliTimer timer;
+    while(true){
+    	//get SIGINT signal
+    	if(sflag){
+            sflag = 0;
+            sigmtx.unlock();
+            IMUthread.join();
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            break;
+        }
+		if (yawData.size()>2){
+			//get yaw data
+			float prevYaw = yawData.front();
+			//float deltaTheta = yawData.front();
+			yawData.pop();
+			timeData.pop();
+			float newYaw = yawData.front();
+			//long prevTime = timeData.front();
+			//timeData.pop();
+			//long newTime = timeData.front();
+
+			//calculate angular disp. and speed
+			float deltaTheta = newYaw-prevYaw;
+			//long deltat=(newTime-prevTime)/1000;
+
+			if (deltaTheta>0) stepper.rotateToPos(newYaw,3,CCW);
+			else stepper.rotateToPos(newYaw,3,CW);
+			ofile<<timeData.front()<<","<<newYaw<<std::endl;
+            float motorPos = stepper.getCurrPos();
+            std::cout <<"Yaw: " << newYaw<< " Motor pos: " << motorPos<<std::endl;
+            
+		}
+    }
+    printf("\nExit Caught... Closing device.\n");
+
+
+}
+
+
+
+
+
+
