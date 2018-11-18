@@ -11,13 +11,13 @@
 
 
 
-
 volatile sig_atomic_t sflag = 0;
 
 void handle_sig(int sig)
 {
     sflag = 1;
 }
+
 
 
 int main(int argc, char *argv[]) {
@@ -29,6 +29,10 @@ int main(int argc, char *argv[]) {
 		num = 1;
 	}
 	
+	
+	
+	
+	
     std::cout << "Program Executing\n";
     signal(SIGINT, handle_sig);
   
@@ -38,6 +42,10 @@ int main(int argc, char *argv[]) {
     printf("Initializing\n\n");
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+
+
+
 
 
     std::cout << "QuatW  | QuatX | QuatY | QuatZ | Time |" << std::endl;

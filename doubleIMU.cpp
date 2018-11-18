@@ -8,7 +8,7 @@
 #include <signal.h>
 #include <string>
 #include <fstream>
-#include "quaternion.h"
+#include "support/IMUQuatReader.h"
 
 volatile sig_atomic_t sflag = 0;
 
@@ -30,10 +30,8 @@ int main(int argc, char *argv[]) {
 	}
     std::cout << "Program Executing\n";
     signal(SIGINT, handle_sig);
-	std::string ser1 = "/dev/ttyACM"+std::to_string(num1);
-	std::string ser2 = "/dev/ttyACM"+std::to_string(num2);
-    AHRS com1 = AHRS(ser1.c_str());
-    AHRS com2 = AHRS(ser2.c_str());
+	IMUQuatReader com1(num1);
+	IMUQuatReader com2(num2);
     Quaternion v1(0.0,0.0,1.0,0.0);
     Quaternion v2(0.0,0.0,1.0,0.0);
     std::ofstream ofile;
@@ -47,12 +45,12 @@ int main(int argc, char *argv[]) {
 
     std::cout << "QuatX | QuatY | QuatZ | Time |" << std::endl;
 
-	Quaternion q1prev(&com1);
-	Quaternion q2prev(&com2);
+	Quaternion q1prev = com1.getQuat();
+	Quaternion q2prev = com2.getQuat();
     while( 1 == 1){
-		Quaternion q1now(&com1);
+		Quaternion q1now = com1.getQuat();
         Quaternion q1 = q1now/q1prev;
-        Quaternion q2now(&com2);
+        Quaternion q2now = com2.getQuat();
         Quaternion q2 = q2now/q2prev;
         q2prev = q2now;
         q2=q2/q1;
@@ -62,6 +60,7 @@ int main(int argc, char *argv[]) {
         v1 = v1.rotate(q1);
         v2 = v2.rotate(q2);
         v2 = v2.rotate(q1);
+        std::cout<<v2.getX()<<","<<v2.getY()<<","<<v2.getZ()<<std::endl;
         ofile<<v1.getX()<<","<<v1.getY()<<","<<v1.getZ()<<","<<v2.getX()<<","<<v2.getY()<<","<<v2.getZ()<<std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			
