@@ -5,6 +5,7 @@ import mpl_toolkits.mplot3d.axes3d as p3
 import matplotlib.animation as animation
 import numpy as np
 from mpl_toolkits.mplot3d import proj3d
+import sys
  
 def orthogonal_proj(zfront, zback):
     a = (zfront+zback)/(zfront-zback)
@@ -25,12 +26,13 @@ def update_plot(frame,data,lines):
 
 
 count = 0
-with open("data/dqfile.txt") as f:
+filename = sys.argv[1]
+with open(filename) as f:
 	for line in f:
 		count = count +1
 		
 data = np.empty([6,count])
-with open("data/dqfile.txt") as f:
+with open(filename) as f:
 	for i,line in enumerate(f):
 		dat = line.split(",")
 		data[1,i]=float(dat[0])
@@ -51,7 +53,7 @@ lines=line+dots
 proj3d.persp_transformation = orthogonal_proj
 print(type(dots))
 
-ax.set_xlim3d([0,4.0])
+ax.set_xlim3d([0,2.0])
 ax.set_xlabel("Y")
 ax.set_ylim3d([-2,2.0])
 ax.set_ylabel("X")
@@ -59,6 +61,6 @@ ax.set_zlim3d([-2.0,2.0])
 ax.set_zlabel("Z")
 #ax.view_init(0,90)
 
-line_ani= animation.FuncAnimation(fig,update_plot,count+n, fargs=(data,lines), interval=140, blit=True)
+line_ani= animation.FuncAnimation(fig,update_plot,count+n, fargs=(data,lines), interval=10, blit=True)
 		
 plt.show()
